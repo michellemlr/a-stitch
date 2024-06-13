@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>🧶 one stitch at a time</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="style.css" />
+    <!-- Compiled w/ P5LIVE, http://github.com/ffd8/p5live -->
+    <style type="text/css">
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+      canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: -1;
+        width: 100vw;
+        height: 100vh;
+        margin: 0;
+      }
+    </style>
+    <script type="text/javascript">
+      // eco-mode = only render if window focused
+      window.onblur = function () {
+        noLoop();
+      };
+      window.onfocus = function () {
+        loop();
+      };
+    </script>
+    <script
+      type="text/javascript"
+      src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.min.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="https://cdn.jsdelivr.net/gh/processing/p5.js-sound/lib/p5.sound.min.js"
+    ></script>
+  </head>
+  <body style="background: rgb(255, 255, 255)">
+    <script type="text/javascript">
+      //grid-twodimensional-array_gui
+
+      /* CUSTOM FUNCTIONS FOR P5LIVE */
+      // keep fullscreen if window resized
+      function windowResized() {
+        resizeCanvas(windowWidth, windowHeight);
+      }
+
+      // custom ease function
+      function ease(iVal, oVal, eVal) {
+        return (oVal += (iVal - oVal) * eVal);
+      }
+
+      // processing compatibility
+      function println(msg) {
+        print(msg);
+      }
+
+      var cols = 20;
+      var rows = 20;
+
+      var usedColors = [];
+      var colors = [];
+      var layer2 = [];
+      var img; // Variable to store the uploaded image
+      var colPic;
+      let brushSelector;
+
+      let layerSelector;
+      let aboutButton;
+      let infoBox;
+      let closeButtonInfoBox;
+      let colsText, rowsText;
+
+      var inputCols;
+      var inputRows;
+      var button;
+      var saveButton;
+      var resetButton;
+      var textBox;
+      var fileInput; // File input for uploading an image
+
+      var currentLayer = 1;
+      var currentRow = rows - 1; // Start from the bottom row
+
+      function make2Darray(cols, rows) {
+        var arr = new Array(cols);
+        for (var i = 0; i < arr.length; i++) {
+          arr[i] = new Array(rows);
+        }
+        return arr;
+      }
+
+      function setup() {
+        createCanvas(windowWidth, windowHeight);
+
+        guiHolder = createDiv("").class("gui-holder");
+        // guiHolder4 = createDiv("").class("gui-holder4");
+
+        colors = make2Darray(cols, rows);
+        layer2 = make2Darray(cols, rows);
+
+        guiHolder4 = createDiv("").class("gui-holder4");
+
+        layerSelector = createSelect();
+        layerSelector.parent(guiHolder4);
+        layerSelector.option("drawing mode");
+        layerSelector.option("crochet mode");
+        layerSelector.class("layerSelector");
+        layerSelector.changed(selectLayer);
+
+        guiHolder8 = createDiv("").class("gui-holder8");
+        aboutButton = createButton("About");
+        aboutButton.parent(guiHolder8);
+        aboutButton.mousePressed(openInfoBox);
+        aboutButton.class("aboutButton");
+
+        let infoBoxWidth = 300;
+        let infoBoxHeight = 200;
+        infoBox = createDiv("");
+        infoBox.position(
+          width / 2 - infoBoxWidth / 2,
+          height / 2 - infoBoxHeight / 2
+        );
+        infoBox.size(300, 240);
+        infoBox.class("infoBox");
+        infoBox.hide(); // Hide initially
+
+        closeButtonInfoBox = createButton("×");
+        closeButtonInfoBox.position(infoBox.x + infoBox.width, infoBox.y + 5);
+        closeButtonInfoBox.class("closeInfoBox");
+        closeButtonInfoBox.hide(); // Hide initially */
+        closeButtonInfoBox.mousePressed(closeInfoBox);
+
+        let infoText =
+          "ONE STITCH AT A TIME 🧶<br> This generative tool will help you to make the process of your crochet project much easier.\n In 'drawing mode' you are able to adjust the grid in whatever way you imagine. If you are ready you select the 'crochet mode' and are able to crochet while simultaneously using the tool for help<br> have fun exploring!";
+        let infoParagraph = createP(infoText);
+        infoParagraph.parent(infoBox);
+
+        openInfoBox();
+
+        createDiv("").parent(guiHolder);
+        colPic = createColorPicker("white").class("colPic").parent(guiHolder);
+        brushSelector = createSelect().parent(guiHolder);
+        brushSelector.option("small brush");
+        brushSelector.option("big brush");
+        brushSelector.class("brushSelector");
+
+        guiHolder2 = createDiv("").parent(guiHolder).class("gui-holder2");
+        colsText = createElement("p", "cols:");
+        colsText.parent(guiHolder2);
+        inputCols = createInput().parent(guiHolder2);
+        rowsText = createElement("p", "rows:");
+        rowsText.parent(guiHolder2);
+        inputRows = createInput().parent(guiHolder2);
+
+        guiHolder6 = createDiv("").parent(guiHolder).class("gui-holder6");
+        button = createButton("update grid").class("button").parent(guiHolder6);
+
+        guiHolder3 = createDiv("").parent(guiHolder).class("gui-holder3");
+        fileInput = createFileInput(handleFile)
+          .class("fileInput")
+          .parent(guiHolder3); // File input for uploading an image
+        saveButton = createButton("save design")
+          .class("saveButton")
+          .parent(guiHolder3);
+
+        resetButton = createButton("erase all")
+          .class("resetButton")
+          .parent(guiHolder);
+
+        brushSelector.changed(updateThreshold);
+
+        inputCols.size(40);
+        inputCols.attribute("placeholder", "20");
+
+        inputRows.size(40);
+        inputRows.attribute("placeholder", "20");
+
+        button.mousePressed(updateGridSize);
+
+        saveButton.mousePressed(saveDrawing);
+
+        resetButton.mousePressed(resetingButton);
+
+        initializeColors();
+        initializeLayer2();
+      }
+
+      function initializeColors() {
+        colors = make2Darray(cols, rows);
+        for (var i = 0; i < cols; i++) {
+          for (var j = 0; j < rows; j++) {
+            colors[i][j] = color(255); // Store p5.Color objects
+          }
+        }
+      }
+
+      function initializeLayer2() {
+        layer2 = make2Darray(cols, rows);
+        for (var i = 0; i < cols; i++) {
+          for (var j = 0; j < rows; j++) {
+            layer2[i][j] = color(255); // Store p5.Color objects
+          }
+        }
+      }
+
+      function updateGridSize() {
+        var newCols = int(inputCols.value());
+        var newRows = int(inputRows.value());
+        if (newCols > 0 && newRows > 0) {
+          cols = newCols;
+          rows = newRows;
+          initializeColors();
+          if (img) {
+            pixelateImage();
+          }
+        }
+      }
+
+      function resetingButton() {
+        initializeColors();
+        initializeLayer2();
+      }
+
+      function handleFile(file) {
+        if (file.type === "image") {
+          img = loadImage(file.data, pixelateImage);
+        }
+      }
+
+      function pixelateImage() {
+        if (!img) return;
+
+        img.loadPixels();
+        let w = img.width / cols;
+        let h = img.height / rows;
+
+        for (let i = 0; i < cols; i++) {
+          for (let j = 0; j < rows; j++) {
+            let x = floor(i * w);
+            let y = floor(j * h);
+            let c = img.get(x, y);
+            colors[i][j] = color(c[0], c[1], c[2]);
+          }
+        }
+      }
+
+      function keyPressed() {
+        if (currentLayer === 2) {
+          if (keyCode === UP_ARROW) {
+            currentRow = max(currentRow - 1, 0);
+          } else if (keyCode === DOWN_ARROW) {
+            currentRow = min(currentRow + 1, rows - 1);
+          }
+        }
+      }
+
+      function selectLayer() {
+        let selectedLayer = layerSelector.value();
+        if (selectedLayer === "drawing mode") {
+          currentLayer = 1;
+          guiHolder.show(); // Show GUI elements
+        } else if (selectedLayer === "crochet mode") {
+          currentLayer = 2;
+          guiHolder.hide(); // Hide GUI elements
+        }
+        layerSelector.changed(selectLayer);
+        layerSelector.elt.addEventListener("keydown", function (event) {
+          if (event.keyCode === UP_ARROW || event.keyCode === DOWN_ARROW) {
+            event.preventDefault();
+          }
+        });
+      }
+
+      function openInfoBox() {
+        // Show the info box and close button
+        infoBox.show();
+        closeButtonInfoBox.show();
+      }
+
+      function closeInfoBox() {
+        // Hide the info box and close button
+        infoBox.hide();
+        closeButtonInfoBox.hide();
+      }
+
+      function draw() {
+        background(255);
+        translate(width / 2, height / 2); // Move the origin to the center of the canvas
+        rectMode(CENTER);
+        strokeWeight(1);
+        let gridSize = round(min(width, height) / max(cols, rows)); // Adjusting gridSize to fit the smaller dimension
+        let gridWidth = cols * gridSize;
+        let gridHeight = rows * gridSize;
+
+        let threshold =
+          brushSelector.value() === "small brush"
+            ? gridSize / 2
+            : gridSize / 0.3;
+
+        if (colors.length == cols) {
+          if (currentLayer === 1) {
+            // Draw first layer
+            for (var i = 0; i < cols; i++) {
+              for (var j = 0; j < rows; j++) {
+                var x = (i - cols / 2) * gridSize + gridSize / 2;
+                var y = (j - rows / 2) * gridSize + gridSize / 2;
+
+                fill(colors[i][j]);
+                if (
+                  dist(mouseX - width / 2, mouseY - height / 2, x, y) <
+                  threshold
+                ) {
+                  if (mouseIsPressed) {
+                    colors[i][j] = color(colPic.color());
+                  }
+                  fill(colPic.color());
+                }
+
+                stroke(0);
+                rect(x, y, gridSize, gridSize);
+              }
+            }
+          } else if (currentLayer === 2) {
+            // Only draw the current row of the first layer
+            for (var i = 0; i < cols; i++) {
+              var xLayer1 = (i - cols / 2) * gridSize + gridSize / 2;
+              var yLayer1 = (currentRow - rows / 2) * gridSize + gridSize / 2;
+
+              fill(colors[i][currentRow]);
+              stroke(0);
+              rect(xLayer1, yLayer1, gridSize, gridSize);
+
+              // Draw the second layer's row on top
+              var xLayer2 = (i - cols / 2) * gridSize + gridSize / 2;
+              var yLayer2 = (currentRow - rows / 2) * gridSize + gridSize / 2;
+
+              rect(xLayer2, yLayer2, gridSize, gridSize);
+
+              // Draw arrow next to the row
+              let arrowX = gridWidth / 2 + 20; // Adjust the x-position of the arrow
+              let arrowY = (currentRow - rows / 2) * gridSize + gridSize / 2;
+              let arrowSize = 20;
+
+              // Determine arrow direction based on row number
+              let arrowDirection =
+                currentRow % 2 === 0 ? RIGHT_ARROW : LEFT_ARROW;
+
+              drawArrow(arrowX, arrowY, arrowSize, arrowDirection);
+            }
+          }
+        }
+      }
+
+      function saveDrawing() {
+        save("picture.png");
+      }
+
+      function drawArrow(x, y, size, direction) {
+        push();
+        translate(x, y);
+
+        // Set text properties
+        textSize(size);
+        textAlign(CENTER, CENTER);
+
+        // Draw arrow text based on direction
+        fill(0);
+        if (direction === LEFT_ARROW) {
+          text("←", 0, 0); // Left arrow
+        }
+
+        pop();
+        push();
+        translate(-x, y);
+
+        // Set text properties
+        textSize(size);
+        textAlign(CENTER, CENTER);
+
+        // Draw arrow text based on direction
+        fill(0);
+        if (direction === RIGHT_ARROW) {
+          text("→", 0, 0); // Right arrow
+        }
+        pop();
+      }
+
+      function updateThreshold() {}
+    </script>
+  </body>
+</html>

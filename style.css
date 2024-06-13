@@ -1,0 +1,94 @@
+.gui-holder {
+  font-family: "Tahoma";
+  font-size: 12px;
+  position: fixed;
+  margin-top: 120px;
+  width: 150px;
+  height: auto;
+  padding-left: 50px;
+}
+.gui-holder4 {
+  font-family: "Tahoma";
+  font-size: 12px;
+  position: fixed;
+  margin-top: 60px;
+  width: 150px;
+  height: auto;
+  padding-left: 50px;
+}
+.gui-holder8 {
+  margin-top: 60px;
+  width: auto;
+  height: auto;
+  padding-right: 50px;
+  float: right;
+}
+.gui-holder2,
+.gui-holder3 {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+.gui-holder input,
+.gui-holder2 input,
+.gui-holder3 input,
+.gui-holder4 input {
+  margin: 0 5px 0 0;
+  margin-bottom: 20px;
+}
+.colPic {
+  border: 2px solid black;
+  padding: 5px 5px;
+}
+.button,
+.saveButton,
+.resetButton,
+.fileInput,
+.layerSelector,
+.aboutButton,
+.brushSelector {
+  background-color: white;
+  border: 2px solid black;
+  color: black;
+  padding: 5px 5px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 12px;
+  transition-duration: 0.4s;
+  cursor: pointer;
+}
+.fileInput {
+  color: transparent;
+  width: 100px;
+}
+.button:hover,
+.resetButton:hover,
+.saveButton:hover,
+.layerSelector:hover,
+.aboutButton:hover,
+.brushSelector:hover {
+  background-color: black; /* Green */
+  color: white;
+}
+/* .fileInput {
+  display: none;
+} */
+
+.closeInfoBox {
+  font-family: "Tahoma";
+  size: 15px, 15px;
+  background-color: black;
+  color: white;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.infoBox {
+  font-family: "Tahoma";
+  size: 300px, 200px;
+  background-color: black;
+  color: white;
+  border: 1px solid white;
+  padding: 20px;
+}
